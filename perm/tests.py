@@ -29,6 +29,10 @@ class Person(models.Model):
 
 @permissions_for(Person)
 class PersonPermissions(ModelPermissions):
+    def has_perm_create(self):
+        # Only superuser can create
+        return self.user.is_superuser
+
     def has_perm_visit(self):
         # Let's ask the Person object
         return self.obj.user_can_visit(self.user)
@@ -86,6 +90,19 @@ class PermissionsTest(TestCase):
         self.assertEqual(False, self.staff_user.has_perm(perm))
         self.assertEqual(False, self.staff_user.has_perm(perm, Person))
         self.assertEqual(False, self.staff_user.has_perm(perm, self.person))
+
+    def test_permission_create(self):
+        perm = 'create'
+        # True for superuser
+        self.assertEqual(True, self.superuser.has_perm(perm))
+        self.assertEqual(True, self.superuser.has_perm(perm, Person))
+        self.assertEqual(True, self.superuser.has_perm(perm, self.person))
+        self.assertEqual(True, self.superuser.has_perm(perm, 'perm.Person'))
+        # False for our staff user
+        self.assertEqual(False, self.staff_user.has_perm(perm))
+        self.assertEqual(False, self.staff_user.has_perm(perm, Person))
+        self.assertEqual(False, self.staff_user.has_perm(perm, self.person))
+        self.assertEqual(False, self.staff_user.has_perm(perm, 'perm.Person'))
 
     def test_permission_gamma(self):
         perm = 'gamma'

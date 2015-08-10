@@ -3,6 +3,13 @@
 History
 -------
 
+3.0 - In Progress
++++++++++++++++++
+
+* Anonymous users and inactive users are no longer automatically denied every permission. This was a bad design.
+* Better code documentation (more to come).
+* More tests
+
 
 2.4.1 (2014-12-15)
 ++++++++++++++++++

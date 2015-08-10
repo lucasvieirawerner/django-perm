@@ -1,7 +1,10 @@
+from __future__ import unicode_literals
+
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Model
 
 from .exceptions import PermAppException
+from .utils import get_model_for_perm
 from .permissions import permissions_manager
 
 
@@ -19,10 +22,6 @@ class ModelPermissionBackend(object):
 
     def has_perm(self, user_obj, perm, obj=None):
 
-        # Non-existing and inactive users never get permission
-        if not user_obj or not user_obj.is_active:
-            return False
-
         # If obj is a Model instance, get the model class
         if not obj:
             obj = None
@@ -30,12 +29,16 @@ class ModelPermissionBackend(object):
         elif isinstance(obj, Model):
             model = obj.__class__
         else:
+            model = None
             try:
                 if issubclass(obj, Model):
                     model = obj
                     obj = None
             except TypeError:
-                return False
+                # TypeError is raised if obj is not a class
+                pass
+            if not model:
+                model = get_model_for_perm(obj, raise_exception=True)
 
         # If permission is in dot notation,
         perm_parts = perm.split('.')

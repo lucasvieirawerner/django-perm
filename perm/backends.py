@@ -38,7 +38,11 @@ class ModelPermissionBackend(object):
                 # TypeError is raised if obj is not a class
                 pass
             if not model:
-                model = get_model_for_perm(obj, raise_exception=True)
+                model = get_model_for_perm(obj, raise_exception=False)
+
+        # Without a model, this backend can only return False
+        if not model:
+            return False
 
         # If permission is in dot notation,
         perm_parts = perm.split('.')

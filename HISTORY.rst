@@ -9,6 +9,7 @@ History
 * Anonymous users and inactive users are no longer automatically denied every permission. This was a bad design.
 * Better code documentation (more to come).
 * More tests
+* Simplified getting model for an object (get_model_for_perm)
 
 
 2.4.1 (2014-12-15)

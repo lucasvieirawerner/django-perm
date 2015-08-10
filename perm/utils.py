@@ -13,6 +13,11 @@ from .exceptions import PermAppException
 
 
 def get_model_for_perm(model, raise_exception=False):
+    """
+    Get the model for a given object or class.
+    If ``raise_exception`` is set to True, an Exception is raised if no class can be found.
+    If ``raise_exception`` is set to False (default), ``None`` is a valid result.
+    """
     if isinstance(model, basestring):
         # If model is a string, find the appropriate model class
         try:
@@ -28,14 +33,8 @@ def get_model_for_perm(model, raise_exception=False):
         # Assume we have been given a model class or instance
         model_class = model
 
-    # Test is this is an instance or subclass of Model
-    try:
-        is_model = issubclass(model_class, Model)
-    except TypeError:
-        is_model = False
-
     # Handle failure
-    if not is_model:
+    if not model_class:
         if raise_exception:
             raise PermAppException(_('%(model)s is not a Django Model class.' % {
                 'model': model

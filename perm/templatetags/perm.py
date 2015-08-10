@@ -56,7 +56,7 @@ def get_permission(tag, perm, obj_or_model, context):
         model = get_model_for_perm(model, raise_exception=True)
     try:
         request = context['request']
-    except IndexError:
+    except KeyError:
         raise TemplateSyntaxError("Tag '%(tag)' requires request context".format(tag=tag))
     try:
         user = request.user

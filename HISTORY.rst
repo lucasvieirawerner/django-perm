@@ -3,13 +3,19 @@
 History
 -------
 
-3.0 - In Progress
+
+3.0 (in preparation)
+++++++++++++++++++++
+* ANNOUNCEMENT: In a future release, anonymous users and inactive users are no longer automatically denied every permission. This turns out to be a bad design.
+
+
+2.5 - In Progress
 +++++++++++++++++
 
-* Anonymous users and inactive users are no longer automatically denied every permission. This was a bad design.
 * Better code documentation (more to come).
 * More tests
 * Simplified getting model for an object (get_model_for_perm)
+* Removed an unused method for registering permissions
 
 
 2.4.1 (2014-12-15)

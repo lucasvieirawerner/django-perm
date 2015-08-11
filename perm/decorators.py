@@ -1,17 +1,10 @@
 from .permissions import permissions_manager
 
 
-# Decorator for models
-def permissions(permissions_class):
-    def wrap(model):
-        permissions_manager.register(model, permissions_class)
-        return model
-
-    return wrap
-
-
-# Decorator for permissions class
 def permissions_for(model):
+    """
+    Decorator for permissions class, to automatically register it for a given model
+    """
     def wrap(permissions_class):
         permissions_manager.register(model, permissions_class)
         return permissions_class

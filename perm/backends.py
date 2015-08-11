@@ -22,6 +22,11 @@ class ModelPermissionBackend(object):
 
     def has_perm(self, user_obj, perm, obj=None):
 
+        # Non-existing and inactive users never get permission
+        # TODO: This is bad design and must be changed
+        if not user_obj or not user_obj.is_active:
+            return False
+
         # If obj is a Model instance, get the model class
         if not obj:
             obj = None

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# Version, used in ../setup.py
 __version__ = '2.5.0'
 
 # Default app config for Django 1.7+

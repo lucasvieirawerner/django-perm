@@ -49,7 +49,10 @@ def handle_perm(parser, token):
     return tag, perm, obj_or_model, context_var
 
 
-def get_permission(tag, perm, obj_or_model, context):
+@register.assignment_tag(takes_context=True)
+def perm(context, perm, obj_or_model=None):
+    perm = Variable(perm).resolve(context, ignore_failures=True)
+    obj_or_model = Variable(obj_or_model).resolve(context)
     perm = handle_var(perm, context)
     model = handle_var(obj_or_model, context)
     if model and not isinstance(model, Model):
@@ -67,56 +70,3 @@ def get_permission(tag, perm, obj_or_model, context):
     return user.has_perm(perm)
 
 
-@register.tag
-def perm(parser, token):
-    tag, perm, obj_or_model, context_var = handle_perm(parser, token)
-    return PermNode(perm, obj_or_model, context_var)
-
-
-@register.tag
-def ifperm(parser, token):
-    tag, perm, obj_or_model, context_var = handle_perm(parser, token)
-    # States
-    default_states = ['ifperm', 'else']
-    end_tag = 'endifperm'
-    # Place to store the states and their values
-    states = {}
-    # Iterate over our context and find tokens
-    while token.contents != end_tag:
-        current = token.contents
-        states[current.split()[0]] = parser.parse(default_states + [end_tag])
-        token = parser.next_token()
-    # Return node
-    return IfPermNode(states, perm, obj_or_model)
-
-
-class PermNode(Node):
-    def __init__(self, perm, obj_or_model, context_var):
-        self.perm = perm
-        self.obj_or_model = obj_or_model
-        self.context_var = context_var
-
-    def render(self, context):
-        result = get_permission('perm', self.perm, self.obj_or_model, context)
-        if self.context_var:
-            context[self.context_var] = result
-            return ''
-        return result
-
-
-class IfPermNode(Node):
-    def __init__(self, states, perm, obj_or_model):
-        self.states = states
-        self.perm = perm
-        self.obj_or_model = obj_or_model
-
-    def render(self, context):
-        result = get_permission('perm', self.perm, self.obj_or_model, context)
-        if result:
-            index = 'ifperm'
-        else:
-            index = 'else'
-        try:
-            return self.states[index].render(context)
-        except KeyError:
-            return ''

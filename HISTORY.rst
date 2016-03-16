@@ -6,7 +6,11 @@ History
 
 3.0 (in preparation)
 ++++++++++++++++++++
-* ANNOUNCEMENT: In a future release, anonymous users and inactive users are no longer automatically denied every permission. This turns out to be a bad design.
+* WARNING: Lots of breaking changes.
+* Dropped support for python < 2.7.
+* Dropped suport for Django < 1.8.
+* Anonymous users and inactive users are no longer automatically denied every permission.
+* The {% ifperm %} template tag was removed. Use {% perm ... as ... %} instead.
 
 
 2.5 - In Progress

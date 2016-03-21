@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from perm.exceptions import PermAppException, PermQuerySetNotFound
+from perm.exceptions import PermAppException, PermQuerySetNotFound, PermMethodNotFound, PermPrimaryKeyNotFound
 from perm.utils import get_model_for_perm
 
 
@@ -77,7 +77,10 @@ class ModelPermissions(object):
         try:
             method = getattr(self, 'has_perm_%s' % self.perm)
         except AttributeError:
-            return False
+            raise PermMethodNotFound(_('Permissions for %(model)s do not include method for %(perm)s.' % {
+                'model': self.model,
+                'perm': self.perm
+            }))
         # No need for self parameter, Python knows it is a method
         return method()
 
@@ -85,29 +88,57 @@ class ModelPermissions(object):
         """
         Test to see if obj appears in get_perm_PERM_queryset()
         """
-        try:
-            qs = self.get_queryset()
-        except PermQuerySetNotFound:
-            # No queryset, no permission
-            return False
+
+        # Get the queryset (raises PermQuerySetNotFound if not available)
+        qs = self.get_queryset()
+
+        # Get the PK (raise PermPrimaryKeyNotFound if not available)
         try:
             pk = self.obj.pk
         except AttributeError:
-            # No object or no pk, no permission
-            return False
+            raise PermPrimaryKeyNotFound(
+                _('Permission {perm} for object {object} (model {model}) requires a primary key.'.format(
+                    object=self.obj,
+                    perm=self.perm,
+                    model=self.model,
+                ))
+            )
+
+        # Math the object with the queryset
         return qs.filter(pk=pk).exists()
 
-    def has_perm(self):
+    def _has_perm(self):
         """
         Test using direct method and queryset
         """
+
+        # Check empty, anonymous and inactive users
         if not self.allow_anonymous_user or not self.allow_inactive_user:
             if not self.user or self.user.pk is None:
                 return False
             if not self.allow_inactive_user and not self.user.is_active:
                 return False
 
-        return self._has_perm_using_method() or self._has_perm_using_queryset()
+        # Try using method, move on if no method is defined
+        try:
+            return self._has_perm_using_method()
+        except PermMethodNotFound:
+            pass
+
+        # Try using queryset, forgive lackign QS or PK by eventually returning False
+        try:
+            return self._has_perm_using_queryset()
+        except (PermQuerySetNotFound, PermPrimaryKeyNotFound):
+            pass
+
+        # Deny permission
+        return False
+
+    def has_perm(self):
+        """
+        Test for permission
+        """
+        return self._has_perm()
 
 
 # Instantiate the singleton

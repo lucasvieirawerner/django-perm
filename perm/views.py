@@ -64,11 +64,11 @@ class PermMultipleObjectMixin(PermMixin):
         Get the queryset with the proper permission
         """
 
-        # Queryset for permission
+        # QuerySet for permission
         perm_qs = get_perm_queryset(self.model, self.request.user, self.perm)
 
         try:
-            # Queryset for Class Based View
+            # QuerySet for Class Based View
             super_qs = super(PermMultipleObjectMixin, self).get_queryset(*args, **kwargs)
         except AttributeError:
             # Not found? Use the permission queryset

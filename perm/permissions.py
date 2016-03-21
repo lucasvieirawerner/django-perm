@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
 
 from django.utils.translation import ugettext_lazy as _
-from django.conf import settings
 
-from perm.exceptions import PermAppException, PermQuerySetNotFound, PermMethodNotFound, PermPrimaryKeyNotFound
-from perm.utils import get_model_for_perm
+from perm.cache import cache_get, cache_set, cache_key
+from .exceptions import PermAppException, PermQuerySetNotFound, PermMethodNotFound, PermPrimaryKeyNotFound
+from .utils import get_model_for_perm
 
 
 class ModelPermissionsManager(object):
@@ -55,6 +55,17 @@ class ModelPermissions(object):
         self.user = user_obj
         self.obj = obj
         self.perm = perm
+
+    def get_cache_key(self):
+        """
+        Get a unique cache key for this object's parameters
+        """
+        return cache_key(
+            model=self.model,
+            user=self.user,
+            obj=self.obj,
+            perm=self.perm,
+        )
 
     def get_queryset(self):
         """
@@ -125,7 +136,7 @@ class ModelPermissions(object):
         except PermMethodNotFound:
             pass
 
-        # Try using queryset, forgive lackign QS or PK by eventually returning False
+        # Try using queryset, forgive lacking QS or PK by eventually returning False
         try:
             return self._has_perm_using_queryset()
         except (PermQuerySetNotFound, PermPrimaryKeyNotFound):
@@ -138,7 +149,12 @@ class ModelPermissions(object):
         """
         Test for permission
         """
-        return self._has_perm()
+        cache_key = self.get_cache_key()
+        result = cache_get(cache_key)
+        if result is None:
+            result = self._has_perm()
+            cache_set(cache_key, result)
+        return result
 
 
 # Instantiate the singleton

@@ -1,16 +1,14 @@
 from __future__ import unicode_literals
 
-from django.contrib.auth.models import AnonymousUser
-from django.utils.translation import ugettext_lazy as _
 from django.db.models import Model
+from django.utils.translation import ugettext_lazy as _
 
 from .exceptions import PermAppException
-from .utils import get_model_for_perm
 from .permissions import permissions_manager
+from .utils import get_model_for_perm
 
 
 class ModelPermissionBackend(object):
-
     supports_object_permissions = True
     supports_anonymous_user = True
     supports_inactive_user = True

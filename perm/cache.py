@@ -32,7 +32,7 @@ def cache_key(**kwargs):
     """
     parts = []
     for key in sorted(kwargs):
-        parts.append(u'{}:{}'.format(key, kwargs[key]))
+        parts.append(u'{key}:{value}'.format(key=key, value=kwargs[key]))
     hash_object = hashlib.md5(u'-'.join(parts).encode())
     hash_string = hash_object.hexdigest()
     # Prepend PERM for clarity

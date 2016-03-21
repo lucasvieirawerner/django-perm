@@ -1,14 +1,8 @@
 from __future__ import unicode_literals
 
-from django.db.models import Model
 from django.utils.translation import ugettext as _
 
-try:
-    from django.apps import apps
-    get_model = apps.get_model
-except ImportError:
-    from django.db.models.loading import get_model
-
+from perm.compat import string_types, get_model
 from .exceptions import PermAppException
 
 
@@ -18,7 +12,7 @@ def get_model_for_perm(model, raise_exception=False):
     If ``raise_exception`` is set to True, an Exception is raised if no class can be found.
     If ``raise_exception`` is set to False (default), ``None`` is a valid result.
     """
-    if isinstance(model, basestring):
+    if isinstance(model, string_types):
         # If model is a string, find the appropriate model class
         try:
             app_name, model_name = model.split('.')

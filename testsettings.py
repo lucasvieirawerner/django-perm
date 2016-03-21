@@ -20,7 +20,9 @@ INSTALLED_APPS = (
 )
 
 # Add perm to authentication backends
-AUTHENTICATION_BACKENDS = global_settings.AUTHENTICATION_BACKENDS + [
+AUTHENTICATION_BACKENDS = [
+    # Django default
+    'django.contrib.auth.backends.ModelBackend',
     # Object permissions using perm
     'perm.backends.ModelPermissionBackend',
 ]

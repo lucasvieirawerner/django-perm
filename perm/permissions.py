@@ -67,6 +67,7 @@ class ModelPermissions(object):
                 'model': self.model,
                 'perm': self.perm
             }))
+        # No need for self parameter, Python knows it is a method
         return method()
 
     def _has_perm_using_method(self):
@@ -77,6 +78,7 @@ class ModelPermissions(object):
             method = getattr(self, 'has_perm_%s' % self.perm)
         except AttributeError:
             return False
+        # No need for self parameter, Python knows it is a method
         return method()
 
     def _has_perm_using_queryset(self):
@@ -102,7 +104,7 @@ class ModelPermissions(object):
         if not self.allow_anonymous_user or not self.allow_inactive_user:
             if not self.user or self.user.pk is None:
                 return False
-            if not self.allow_inactive_user and self.user.is_active:
+            if not self.allow_inactive_user and not self.user.is_active:
                 return False
 
         return self._has_perm_using_method() or self._has_perm_using_queryset()

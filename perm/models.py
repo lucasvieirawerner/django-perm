@@ -33,7 +33,3 @@ def autodiscover():
             # attempting to import it, otherwise we want it to bubble up.
             if module_has_submodule(mod, 'permissions'):
                 raise
-
-
-if django.VERSION < (1, 7):
-    autodiscover()

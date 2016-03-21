@@ -3,15 +3,13 @@ from __future__ import unicode_literals
 from unittest import TestCase
 
 from django.contrib.auth.models import User
-from django.template import Template, Context
 from django.db import models
+from django.template import Template, Context
 
 from .decorators import permissions_for
-from .permissions import ModelPermissions
 from .exceptions import PermAppException
+from .permissions import ModelPermissions
 from .utils import get_model_for_perm
-from .models import autodiscover
-
 
 # Dummy patterns to satisfy Django
 urlpatterns = ()
@@ -39,13 +37,10 @@ class PersonPermissions(ModelPermissions):
         return self.obj.user_can_visit(self.user)
 
     def get_queryset_perm_gamma(self):
+        # Permission gamma can only be tested by queryset and will not work on Model Class
         if self.user.username == 'gamma' or self.user.is_superuser:
             return self.model.objects.all()
         return self.model.objects.none()
-
-
-# Load permissions
-autodiscover()
 
 
 class MockRequest(object):
@@ -116,19 +111,20 @@ class PermissionsTest(TestCase):
         self.assertEqual(False, self.staff_user.has_perm(perm, Person))
         self.assertEqual(False, self.staff_user.has_perm(perm, self.person))
         # True for our normal user, since he is named gamma
-        self.assertEqual(False, self.normal_user.has_perm(perm))
-        self.assertEqual(False, self.normal_user.has_perm(perm, Person))
         self.assertEqual(True, self.normal_user.has_perm(perm, self.person))
+        # Except when we give a model class, because it works on querysets only
+        self.assertEqual(False, self.normal_user.has_perm(perm, Person))
+        # Except without an object, then the result will be False
+        self.assertEqual(False, self.normal_user.has_perm(perm))
 
     def test_template_tag_perm(self):
+
+        # Inner function to test a template
         def _test_template(user, perm):
             request = get_request_for_user(user)
-            template1 = '{{% perm "{perm}" person %}}'.format(perm=perm)
-            template2 = '{{% perm "{perm}" person as var %}}{{{{ var }}}}'.format(perm=perm)
-            result1 = render_template(template1, request=request, person=self.person)
-            result2 = render_template(template2, request=request, person=self.person)
-            self.assertEqual(result1, result2)
-            return result1
+            template = '{{% perm "{perm}" person as var %}}{{{{ var }}}}'.format(perm=perm)
+            return render_template(template, request=request, person=self.person)
+
         self.assertEqual('alpha centauri', render_template('{{ person }}', request={'user': None}, person=self.person))
         self.assertEqual('True', _test_template(self.superuser, 'does_not_exist'))
         self.assertEqual('False', _test_template(self.staff_user, 'does_not_exist'))

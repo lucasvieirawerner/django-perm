@@ -1,9 +1,17 @@
 from __future__ import unicode_literals
 
+from django.utils.six import string_types
 from django.utils.translation import ugettext as _
 
-from perm.compat import string_types, get_model
 from .exceptions import PermAppException
+
+# Get get_model across Django versions
+try:
+    from django.apps import apps
+
+    get_model = apps.get_model
+except ImportError:
+    from django.db.models.loading import get_model
 
 
 def get_model_for_perm(model, raise_exception=False):

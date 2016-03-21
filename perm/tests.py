@@ -5,6 +5,7 @@ from unittest import TestCase
 from django.contrib.auth.models import User
 from django.db import models
 from django.template import Template, Context
+from django.utils.encoding import python_2_unicode_compatible
 
 from .decorators import permissions_for
 from .exceptions import PermAppException
@@ -15,6 +16,7 @@ from .utils import get_model_for_perm
 urlpatterns = ()
 
 
+@python_2_unicode_compatible
 class Person(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
@@ -22,7 +24,7 @@ class Person(models.Model):
     def user_can_visit(self, user):
         return user.is_staff
 
-    def __unicode__(self):
+    def __str__(self):
         return '{first_name} {last_name}'.format(first_name=self.first_name, last_name=self.last_name).strip()
 
 
@@ -118,7 +120,6 @@ class PermissionsTest(TestCase):
         self.assertEqual(False, self.normal_user.has_perm(perm))
 
     def test_template_tag_perm(self):
-
         # Inner function to test a template
         def _test_template(user, perm):
             request = get_request_for_user(user)
